@@ -1,6 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Session, UpdateCell } from "./CrosswordContextTypes.ts";
-import type { Puzzle } from "../types/puzzle.ts";
+import type { CrosswordContextType } from "./CrosswordContextTypes.ts";
 
 export const CrosswordContext = createContext<CrosswordContextType | null>(
   null,

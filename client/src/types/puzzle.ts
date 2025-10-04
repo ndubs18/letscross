@@ -3,7 +3,7 @@ type CellData = {
 	col: number,
 	isBlock: boolean,
 	letter?: string,
-	number?: number,
+	number: number,
 }
 type Puzzle = {
 	id: string,

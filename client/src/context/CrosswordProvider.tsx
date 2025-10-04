@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import { CrosswordContext } from "./CrosswordContext";
-import type { Session, CellState } from "./CrosswordContextTypes.ts";
+import type {
+  Session,
+  CellState,
+  UpdateCell,
+  UpdatePlayerPosition,
+} from "./CrosswordContextTypes.ts";
 import type { Puzzle, CellData } from "../types/puzzle.ts";
 const initialSessionData: Session = {
   id: "abc123",
@@ -15,6 +20,7 @@ const initialSessionData: Session = {
     socketId1: {
       name: "Nick",
       color: "#a3f",
+      direction: "across",
       cursor: {
         row: -1,
         col: -1,
@@ -47,8 +53,7 @@ export default function CrosswordProvider({
     }));
   };
 
-  const updateCell = (gridKey: string, letter: string) => {
-    console.log("updating cell");
+  const updateCell: UpdateCell = (gridKey, letter) => {
     setSession((prev) => ({
       ...prev,
       gridState: {
@@ -58,8 +63,7 @@ export default function CrosswordProvider({
     }));
   };
 
-  const updatePlayerPosition = (row: number, col: number) => {
-    console.log("updating pos");
+  const updatePlayerPosition: UpdatePlayerPosition = (row, col) => {
     const socketId = session.player.socketId;
     setSession((prev) => ({
       ...prev,
