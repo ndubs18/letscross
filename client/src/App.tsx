@@ -1,12 +1,13 @@
 import "./App.css";
 import Board from "./components/board/Board.tsx";
+import CrosswordProvider from "./context/CrosswordProvider.tsx";
 
 const puzzleData = {
   id: "puzzle-5x5-001",
   title: "Mini Crossword",
   author: "ChatGPT",
   rows: 5,
-  cols: 5,
+  cols: 7,
   cells: [
     { row: 0, col: 0, isBlock: false, letter: "C", number: 1 },
     { row: 0, col: 1, isBlock: false, letter: "A" },
@@ -130,32 +131,32 @@ const puzzleData = {
   },
 };
 
-const sessionData = {
-  id: "abc123",
-  puzzleId: "puzzle-20250928-1",
-  player: {
-    socketId: "socketId1",
-    name: "Nick",
-    color: "#a3f",
-  },
-  createdAt: "2025-10-22",
-  players: {
-    socketId1: {
-      name: "Nick",
-      color: "#a3f",
-      cursor: {
-        row: undefined,
-        col: undefined,
-      },
-    },
-  },
-  gridState: {},
-};
+// const sessionData = {
+//   id: "abc123",
+//   puzzleId: "puzzle-20250928-1",
+//   player: {
+//     socketId: "socketId1",
+//     name: "Nick",
+//     color: "#a3f",
+//   },
+//   createdAt: "2025-10-22",
+//   players: {
+//     socketId1: {
+//       name: "Nick",
+//       color: "#a3f",
+//       cursor: {
+//         row: -1,
+//         col: -1,
+//       },
+//     },
+//   },
+//   gridState: {},
+// };
 function App() {
   return (
-    <>
-      <Board puzzle={puzzleData} session={sessionData} />
-    </>
+    <CrosswordProvider puzzle={puzzleData}>
+      <Board />
+    </CrosswordProvider>
   );
 }
 

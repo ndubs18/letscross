@@ -21,9 +21,4 @@ type Coords = {
 	col: number
 }
 
-// TODO: Still need to fully type grid
-type Grid = {
-	[key: string]: string,
-}
-
-export type { CellData, Puzzle, Coords, Grid };
+export type { CellData, Puzzle, Coords };

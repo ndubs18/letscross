@@ -3,6 +3,7 @@ import type { ChangeEvent } from "react";
 import "../../index.css";
 import type { Coords } from "./BoardTypes.ts";
 import type { Players } from "../../hooks/session/SessionTypes.ts";
+import { useCrossword } from "../../context/CrosswordContext.tsx";
 
 type CellProps = {
   value: string;
@@ -10,34 +11,20 @@ type CellProps = {
   isBlock?: boolean;
   letter?: string;
   focused: boolean;
-  players: Players;
-  updateGrid: (gridKey: string, value: string) => void;
-  updatePlayerPos: (row: number, col: number) => void;
 };
 
-const EMPTY_COLOR = "transparent";
-const FOCUS_COLOR = "black";
+// const EMPTY_COLOR = "transparent";
+// const FOCUS_COLOR = "black";
 const CORRECT_COLOR = "#3bb143";
 const INCORRECT_COLOR = "#ff0800";
 
 const Cell = React.memo(
-  ({
-    value,
-    gridKey,
-    isBlock,
-    letter,
-    focused,
-    updateGrid,
-    updatePlayerPos,
-  }: CellProps) => {
+  ({ value, gridKey, isBlock, letter, focused }: CellProps) => {
+    const { updateCell, updatePlayerPosition } = useCrossword();
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const cellRef = useRef<HTMLInputElement | null>(null);
-    // TODO: Maybe just pass as numbers and form the string instead?
-    const [row, col] = gridKey.split(":");
 
-    if (row === "0" && col === "0") {
-      console.log(value, letter, isCorrect);
-    }
+    const [row, col] = gridKey.split(":");
 
     useEffect(() => {
       if (value === "" || isBlock) {
@@ -64,7 +51,7 @@ const Cell = React.memo(
     };
 
     const onFocus = () => {
-      updatePlayerPos(Number(row), Number(col));
+      updatePlayerPosition(Number(row), Number(col));
       handleFocusBgColor();
     };
 
@@ -76,7 +63,7 @@ const Cell = React.memo(
 
     const onCellChange = (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      updateGrid(gridKey, value.toUpperCase());
+      updateCell(gridKey, value.toUpperCase());
     };
     return isBlock ? (
       <td
