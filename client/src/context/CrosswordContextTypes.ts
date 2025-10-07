@@ -1,5 +1,5 @@
 
-import type { Puzzle, Coords } from "../types/puzzle.ts"
+import type { Puzzle, Coord } from "../types/puzzle.ts";
 
 type SocketId = string;
 
@@ -12,14 +12,19 @@ type Player = {
 type PlayerState = {
 	name: string,
 	color: string,
-	cursor: Coords,
+	cursor: Coord,
 	direction: 'down' | 'across'
 };
 
 type Players = Record<SocketId, PlayerState>;
+type CellState = Record<string, string>
+type ClueToCells = Record<string, Record<number, Coord[]>>;
+type CellsToClue = Record<string, { across?: number, down?: number }>;
+
+// Function types
 type UpdateCell = (gridKey: string, letter: string) => void;
 type UpdatePlayerPosition = (row: number, col: number) => void;
-type CellState = Record<string, string>
+type ChangePlayerDirection = () => void
 
 type Session = {
 	id: string,
@@ -34,8 +39,11 @@ type Session = {
 type CrosswordContextType = {
 	puzzle: Puzzle,
 	session: Session,
+	clueToCellsMap: ClueToCells,
+	cellsToClueMap: CellsToClue,
 	updateCell: UpdateCell,
 	updatePlayerPosition: UpdatePlayerPosition,
+	changePlayerDirection: ChangePlayerDirection,
 };
 
-export type { CrosswordContextType, Session, Players, CellState, UpdateCell, UpdatePlayerPosition };
+export type { CrosswordContextType, Session, Players, CellState, UpdateCell, UpdatePlayerPosition, ClueToCells, CellsToClue };

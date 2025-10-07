@@ -2,11 +2,13 @@ import { useMemo, useState } from "react";
 import { CrosswordContext } from "./CrosswordContext";
 import type {
   Session,
-  CellState,
   UpdateCell,
   UpdatePlayerPosition,
+  ClueToCells,
+  CellsToClue,
 } from "./CrosswordContextTypes.ts";
 import type { Puzzle, CellData } from "../types/puzzle.ts";
+import { ACROSS, DOWN } from "../constants";
 const initialSessionData: Session = {
   id: "abc123",
   puzzleId: "puzzle-20250928-1",
@@ -29,6 +31,7 @@ const initialSessionData: Session = {
   },
   gridState: {},
 };
+
 export default function CrosswordProvider({
   puzzle,
   children,
@@ -46,12 +49,61 @@ export default function CrosswordProvider({
 
   const [session, setSession] = useState<Session>(initialSessionData);
 
-  const initializeGrid = (initGridState: CellState) => {
-    setSession((prev) => ({
-      ...prev,
-      gridState: initGridState,
-    }));
-  };
+  const clueToCellsMap = useMemo(() => {
+    const clueToCells: ClueToCells = {
+      across: {},
+      down: {},
+    };
+    //build across map
+    for (const [num, word] of Object.entries(puzzle.clues.across)) {
+      const [r, c] = word.start;
+      const length = word.length;
+      const coordsToAdd = [];
+      for (let i = 0; i < length; i++) {
+        coordsToAdd.push({ row: r, col: c + i });
+      }
+      clueToCells.across[Number(num)] = coordsToAdd;
+    }
+
+    //build down map
+    for (const [num, word] of Object.entries(puzzle.clues.down)) {
+      const [r, c] = word.start;
+      const length = word.length;
+      const coordsToAdd = [];
+      for (let i = 0; i < length; i++) {
+        coordsToAdd.push({ row: r + i, col: c });
+      }
+      clueToCells.down[Number(num)] = coordsToAdd;
+    }
+
+    return clueToCells;
+  }, [puzzle]);
+
+  const cellsToClueMap = useMemo(() => {
+    const cellsToClueMap: CellsToClue = {};
+
+    //across
+    for (const [clueNum, coords] of Object.entries(clueToCellsMap.across)) {
+      for (const { row, col } of coords) {
+        const gridKey = `${row}:${col}`;
+        if (!cellsToClueMap[gridKey]) {
+          cellsToClueMap[gridKey] = {};
+        }
+        cellsToClueMap[gridKey].across = Number(clueNum);
+      }
+    }
+    //down
+    for (const [clueNum, coords] of Object.entries(clueToCellsMap.down)) {
+      for (const { row, col } of coords) {
+        const gridKey = `${row}:${col}`;
+        if (!cellsToClueMap[gridKey]) {
+          cellsToClueMap[gridKey] = {};
+        }
+        cellsToClueMap[gridKey].down = Number(clueNum);
+      }
+    }
+    return cellsToClueMap;
+  }, [clueToCellsMap.across, clueToCellsMap.down]);
 
   const updateCell: UpdateCell = (gridKey, letter) => {
     setSession((prev) => ({
@@ -71,8 +123,27 @@ export default function CrosswordProvider({
         ...prev.players,
         [socketId]: {
           ...prev.players[socketId],
-          row: row,
-          col: col,
+          cursor: {
+            row: row,
+            col: col,
+          },
+        },
+      },
+    }));
+  };
+
+  const changePlayerDirection = () => {
+    const socketId = session.player.socketId;
+    const direction = session.players[socketId].direction;
+    const newDirection = direction === ACROSS ? DOWN : ACROSS;
+    console.log("running");
+    setSession((prev) => ({
+      ...prev,
+      players: {
+        ...prev.players,
+        [socketId]: {
+          ...prev.players[socketId],
+          direction: newDirection,
         },
       },
     }));
@@ -83,9 +154,11 @@ export default function CrosswordProvider({
       value={{
         puzzle,
         session,
+        clueToCellsMap,
+        cellsToClueMap,
         updateCell,
-        initializeGrid,
         updatePlayerPosition,
+        changePlayerDirection,
       }}
     >
       {children}

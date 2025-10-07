@@ -1,11 +1,35 @@
+import { useMemo } from "react";
 import { useCrossword } from "../../context/CrosswordContext.tsx";
-import type { CellData } from "../../types/puzzle.ts";
+import type { CellData, Coord } from "../../types/puzzle.ts";
 import Cell from "../board/Cell.tsx";
+import { ACROSS, DOWN } from "../../constants";
 
 const Board = () => {
-  const { puzzle, session } = useCrossword();
+  const { puzzle, session, clueToCellsMap, cellsToClueMap } = useCrossword();
   const socketId = session.player.socketId;
 
+  const currentWordCells = useMemo(() => {
+    const player = session.players[socketId];
+    let direction = player.direction;
+    const { row, col } = player.cursor;
+
+    // If the player cursor isn't somewhere on the board
+    if (row >= 0 && col >= 0) {
+      const cursorKeyId = `${row}:${col}`;
+      let clueNumber = cellsToClueMap[cursorKeyId][direction];
+
+      if (clueNumber !== undefined) {
+        return clueToCellsMap[direction][clueNumber];
+      }
+
+      direction = direction === ACROSS ? DOWN : ACROSS;
+      clueNumber = cellsToClueMap[cursorKeyId][direction];
+
+      if (clueNumber !== undefined) {
+        return clueToCellsMap[direction][clueNumber];
+      }
+    }
+  }, [cellsToClueMap, clueToCellsMap, socketId, session.players]);
   return (
     <table>
       <tbody>
@@ -27,6 +51,9 @@ const Board = () => {
                     session.players[socketId].cursor.row === r &&
                     session.players[socketId].cursor.col === c
                   }
+                  inWord={currentWordCells?.some(
+                    (e: Coord) => e.col === c && e.row === r,
+                  )}
                 />
               );
             })}
